@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema id="MySection"
+    targetNamespace="http://MySpace.com/MySection.xsd"
+    elementFormDefault="qualified"
+    xmlns="http://MySpace.com/MySection.xsd"
+    xmlns:mstns="http://MySpace.com/MySection.xsd"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+>
+  <xs:complexType name="MySection">
+    <xs:sequence>
+      <xs:element name="MyString" type="xs:string" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="MyInt" type="xs:int" minOccurs="1" maxOccurs="1"/>
+      <xs:element name="MyListOfStuffs" minOccurs="1" maxOccurs="1">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="Stuff" type="xs:string" minOccurs="1" maxOccurs="unbounded" />
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+    <xs:attribute name="type" type="xs:string" />
+  </xs:complexType>
+</xs:schema>

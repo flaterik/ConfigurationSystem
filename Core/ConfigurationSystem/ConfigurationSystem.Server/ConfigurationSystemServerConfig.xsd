@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema id="ConfigurationSystemServerConfig"
+    targetNamespace="http://MySpace.com/ConfigurationSystemServerConfig.xsd"
+    elementFormDefault="qualified"
+    xmlns="http://MySpace.com/ConfigurationSystemServerConfig.xsd"
+    xmlns:mstns="http://MySpace.com/ConfigurationSystemServerConfig.xsd"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+>
+  <xs:complexType name="ConfigurationSystemServerConfig">
+    <xs:attribute name="prefix" type="xs:string" default="*"/>
+    <xs:attribute name="port" type="xs:int" default="9000"/>
+    <xs:attribute name="compressionThreshold" type="xs:int" default="10240"/>
+    <xs:attribute name="tfsServer" type="xs:string" default="tfs:8080"/>
+    <xs:attribute name="tfsUserDomain" type="xs:string" default=""/>
+    <xs:attribute name="tfsUserName" type="xs:string"/>
+    <xs:attribute name="tfsUserPassword" type="xs:string"/>    
+    <xs:attribute name="mappingConfigPath" type="xs:string" default="SectionMapping.xml"/>
+		<xs:attribute name="mappingConfigHandler" type="xs:string" default="FileProvider"/>
+		<xs:attribute name="keyProviderTypeName" type="xs:string" default="MySpace.ConfigurationSystem.Encryption.Keys.KeyProvider, MySpace.ConfigurationSystem.Encryption.Keys" />
+	  <xs:attribute name="preCaching" type="xs:boolean" default="true"/>
+		
+  </xs:complexType>
+                  
+</xs:schema>
