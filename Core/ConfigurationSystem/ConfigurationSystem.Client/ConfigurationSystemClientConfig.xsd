@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema id="ConfigurationSystemClientConfig"
+		targetNamespace="http://myspace.com/ConfigurationSystemClientConfig.xsd"
+		elementFormDefault="qualified"
+		xmlns="http://myspace.com/ConfigurationSystemClientConfig.xsd"
+		xmlns:mstns="http://myspace.com/ConfigurationSystemClientConfig.xsd"
+		xmlns:xs="http://www.w3.org/2001/XMLSchema"
+>
+	<xs:complexType name="ConfigurationSystemClientConfig">    
+		<xs:attribute name="remoteHost" type="xs:string" default="localhost:9000"/>
+		<xs:attribute name="sectionCheckIntervalSeconds" type="xs:int" default="60"/>
+		<xs:attribute name="failoverStrategy" type="FailStrategy" default="ThrowException"/>
+		<xs:attribute name="checkOnGet" type="xs:boolean" default="false" />
+		<xs:attribute name="keyProviderTypeName" type="xs:string" default="MySpace.ConfigurationSystem.Encryption.Keys.KeyProvider, MySpace.ConfigurationSystem.Encryption.Keys" />
+	</xs:complexType>
+	<xs:simpleType name="FailStrategy">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="ThrowException"/>
+			<xs:enumeration value="UseLocal"/>
+		</xs:restriction>
+	</xs:simpleType>
+</xs:schema>

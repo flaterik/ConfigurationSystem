@@ -1,0 +1,122 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema id="SectionMapping" targetNamespace="http://myspace.com/SectionMapping.xsd" elementFormDefault="qualified" 
+					 xmlns="http://myspace.com/SectionMapping.xsd" 
+					 xmlns:mstns="http://myspace.com/SectionMapping.xsd" 
+					 xmlns:xs="http://www.w3.org/2001/XMLSchema"
+>
+	<xs:element name="configurationsystem">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="environments" type="EnvironmentsType" minOccurs="1" maxOccurs="1">
+				</xs:element>
+				<xs:element name="sectionmapping" type="SectionMappingType" minOccurs="1" maxOccurs="1"/>
+			</xs:sequence>
+		</xs:complexType>
+		<xs:unique name="NoRepeatEndpoints">
+			<xs:selector xpath="mstns:environments/mstns:environment/mstns:endpoint"/>
+			<xs:field xpath="@address"/>
+		</xs:unique>
+		<xs:unique name="NoRepeatDirectoryGroups">
+			<xs:selector xpath="mstns:environments/mstns:environment/mstns:directorygroup"/>
+			<xs:field xpath="@root"/>
+			<xs:field xpath="@filter"/>
+		</xs:unique>
+		<xs:unique name="NoRepeatVipNames">
+			<xs:selector xpath="mstns:environments/mstns:environment/mstns:vip"/>
+			<xs:field xpath="@name"/>
+		</xs:unique>
+		<xs:unique name="NoRepeatEnvironmentNames">
+			<xs:selector xpath="mstns:environments/mstns:environment"/>
+			<xs:field xpath="@name"/>
+		</xs:unique>
+		<xs:unique name="NoRepeatSectionNames">
+			<xs:selector xpath="mstns:sectionmapping/mstns:section"/>
+			<xs:field xpath="@name"/>
+		</xs:unique>
+	</xs:element>
+
+	<xs:complexType name="SectionMappingType">
+		<xs:sequence>
+			<xs:element name="section" type="SectionType" minOccurs="1" maxOccurs="unbounded">
+				<xs:unique name="NoRepeatExceptionEnvironments">
+					<xs:selector xpath="mstns:exception"/>
+					<xs:field xpath="@environment"/>
+				</xs:unique>
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="SectionType">
+		<xs:sequence>
+			<xs:element name="template" type="TemplateType" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="xsdList" type="XsdsType" minOccurs="0" maxOccurs="1"/>
+			<xs:element name="exception" type="ExceptionType" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+		<xs:attribute name="name" type="xs:string" use="required"/>
+		<xs:attribute name="provider" type="ProviderType" use="required"/>
+		<xs:attribute name="src" type="xs:string" use="required"/>
+		<xs:attribute name="comment" type="xs:string" />
+		<xs:attribute name="generic" type="xs:boolean" />
+		<xs:attribute name="encrypt" type="xs:boolean" />
+	</xs:complexType>
+
+	<xs:complexType name="ExceptionType">
+		<xs:attribute name="environment" type="xs:string" use="required"/>
+		<xs:attribute name="src" type="xs:string" use="required"/>
+	</xs:complexType>
+
+	<xs:complexType name="TemplateType">
+		<xs:attribute name="src" type="xs:string" use="required"/>
+	</xs:complexType>
+
+	<xs:complexType name="XsdsType">
+		<xs:sequence>
+			<xs:element name="xsd" type="XsdType" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="XsdType">
+		<xs:attribute name="src" type="xs:string" use="required"/>
+	</xs:complexType>
+
+	<xs:simpleType name="ProviderType">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="TfsProvider" />
+			<xs:enumeration value="SQLProvider" />
+			<xs:enumeration value="FileProvider" />
+		</xs:restriction>
+	</xs:simpleType>
+
+	<xs:complexType name="EnvironmentsType">
+		<xs:sequence>
+			<xs:element name="environment" type="EnvironmentType" minOccurs="1" maxOccurs="unbounded">
+			</xs:element>
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="EnvironmentType">
+		<xs:sequence>
+			<xs:element name="endpoint" type="EndpointType" minOccurs="0" maxOccurs="unbounded"/>
+			<xs:element name="vip" type="VipType" minOccurs="0" maxOccurs="unbounded">
+			</xs:element>
+			<xs:element name="directorygroup" type="DirectoryGroupType" minOccurs="0" maxOccurs="unbounded"/>
+		</xs:sequence>
+		<xs:attribute name="name" type="xs:string" use="required"/>
+		<xs:attribute name="default" type="xs:boolean" />
+		<xs:attribute name="comment" type="xs:string" />
+	</xs:complexType>
+
+	<xs:complexType name="DirectoryGroupType">
+		<xs:attribute name="root" type="xs:string" use="required"/>
+		<xs:attribute name="filter" type="xs:string" use="required"/>
+	</xs:complexType>
+
+	<xs:complexType name="EndpointType">
+		<xs:attribute name="address" type="xs:string" use="required"/>
+	</xs:complexType>
+
+	<xs:complexType name="VipType">
+		<xs:attribute name="name" type="xs:string" use="required"/>
+	</xs:complexType>
+
+</xs:schema>

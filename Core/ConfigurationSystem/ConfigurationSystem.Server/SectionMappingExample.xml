@@ -1,0 +1,63 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<configurationsystem>
+	<environments>
+		<environment name="Production" default="true" comment="default environment"/>
+		
+		<environment name="Development" default="false">
+			<endpoint address="dtbevnhardesty1.ms.fimdev.com"/>
+			<endpoint address="fakeaddress.ms.fimdev.com"/>
+			<endpoint address="127.0.0.1"/>
+			<endpoint address="::1"/>
+			<directorygroup 
+				root="LDAP://ms.fimdev.com/ou=Cache,ou=Development,ou=Servers,ou=Myspace,dc=ms,dc=fimdev,dc=com"
+				filter="(&amp;(objectClass=computer)(!(userAccountControl:1.2.840.113556.1.4.803:=2)))"
+				/>
+		</environment>
+
+	</environments>
+	<sectionmapping>
+		<section
+			name="TestSectionFile"
+			handler="FileProvider"
+			src="c:\workspaces\ms-dev\configuration\development\connectionstrings.Development.config"
+			comment="Test loading the section from a local file"
+		/>
+
+		<section
+			name="XmlSerializerReplacementHandlerTest"
+			handler="FileProvider"
+			src="ConfigurationSystem-XmlSerializerReplacementHandlerTest.config"
+			comment="Test loading the section from a local file"
+		/>
+
+		<section
+			name="TestSectionTfs"
+			handler="TfsProvider"
+			src="$/ms-dev/Configuration/Development/connectionstrings.Development.Config"
+			comment="Test loading the section from the latest tfs changeset"
+		>
+			<exception environment="Development" src="$/Ms-Dev/Configuration/Immutable/FriendList.config"/>
+			<slowroll
+				environment="Development"
+				src="$/Ms-Dev/Configuration/Immutable/AliasResolver.config"
+				start="10/27/2009"
+				end="10/28/2009 04:00 AM" />
+		</section>
+
+		<section
+			name="TestSectionTfsCs"
+			handler="TfsProvider"
+			src="$/ms-dev/Configuration/{ENVIRONMENT}/connectionstrings.{ENVIRONMENT}.Config:230496"
+			comment="Test loading the section from a specific tfs changeset (230496)"
+		/>
+
+		<section
+			name="MaxFederatedRange"
+			handler="SQLProvider"
+			src="Security|[myspacesecurity].dbo.security_rollovercount"
+			comment="Test grabbing current federated count using security database"
+		/>
+
+
+	</sectionmapping>
+</configurationsystem>
