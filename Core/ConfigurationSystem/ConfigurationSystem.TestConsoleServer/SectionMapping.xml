@@ -12,10 +12,19 @@
   <sectionmapping>
 		<section
       name="XmlSerializerReplacementHandlerTest"
-      handler="FileProvider"
-      src="ConfigurationSystem-XmlSerializerReplacementHandlerTest.config"
+      provider="FileProvider"
+      source="ConfigurationSystem-XmlSerializerReplacementHandlerTest.config"
       comment="Test loading the section from a local file">
-			<exception environment="Development" src="ConfigurationSystem-XmlSerializerReplacementHandlerTest.dev.config"/>
-		</section>    
+			<exception environment="Development" source="ConfigurationSystem-XmlSerializerReplacementHandlerTest.dev.config"/>
+		</section>
+
+		<section
+			name="MySection"
+			provider="FileProvider"
+			source="MySection.config"
+			comment="For the XmlSerializerExample project"
+      />
   </sectionmapping>
+	
+	
 </configurationsystem>

@@ -97,7 +97,7 @@ namespace MySpace.ConfigurationSystem
 									
 								}
 							}
-							catch (TypeInitializationException tix)
+							catch (TypeInitializationException)
 							{
 								log.ErrorFormat("Type Initialization exception creating instance of provider {0} in {1}", type.FullName, assembly.FullName);
 							}

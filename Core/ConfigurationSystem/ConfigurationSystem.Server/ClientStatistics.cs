@@ -28,7 +28,7 @@ namespace MySpace.ConfigurationSystem
 			_allStatsLock = new ReaderWriterLockSlim(LockRecursionPolicy.SupportsRecursion);
 		}
 
-		public string GetLastServedSrcForClient(string environmentName, string sectionName, IPAddress addr)
+		public string GetLastServedSourceForClient(string environmentName, string sectionName, IPAddress addr)
 		{
 			SectionStatistics sectionStat;
 			string ret = null;
@@ -37,7 +37,7 @@ namespace MySpace.ConfigurationSystem
 			{
 				if (_allStatistics.TryGetValue(sectionName, out sectionStat))
 				{
-					ret = sectionStat.GetLastServedSrcForClient(environmentName, addr);
+					ret = sectionStat.GetLastServedSourceForClient(environmentName, addr);
 				}
 			}
 			finally
@@ -48,7 +48,7 @@ namespace MySpace.ConfigurationSystem
 			return ret;
 		}
 
-		internal void RegisterGet(EndPoint requester, string requestorEnvironment, string sectionName, string returnedHash, string src)
+		internal void RegisterGet(EndPoint requester, string requestorEnvironment, string sectionName, string returnedHash, string source)
 		{
 			SectionStatistics sectionStats;
 			_allStatsLock.EnterReadLock();
@@ -56,7 +56,7 @@ namespace MySpace.ConfigurationSystem
 			{
 				if (_allStatistics.TryGetValue(sectionName, out sectionStats))
 				{
-					sectionStats.RegisterGet(requester, requestorEnvironment, returnedHash, src);
+					sectionStats.RegisterGet(requester, requestorEnvironment, returnedHash, source);
 					return;
 				}
 			}
@@ -67,7 +67,7 @@ namespace MySpace.ConfigurationSystem
 				                requestorEnvironment,
 				                sectionName,
 				                returnedHash,
-				                src,
+				                source,
 				                e);
 			}
 			finally
@@ -81,12 +81,12 @@ namespace MySpace.ConfigurationSystem
 			{
 				if (!_allStatistics.ContainsKey(sectionName)) //but it might've been while we were getting the lock
 				{
-					sectionStats = new SectionStatistics(this, sectionName, requester, requestorEnvironment, returnedHash, src);
+					sectionStats = new SectionStatistics(this, sectionName, requester, requestorEnvironment, returnedHash, source);
 					_allStatistics.Add(sectionName, sectionStats);
 				}
 				else
 				{
-					_allStatistics[sectionName].RegisterGet(requester, requestorEnvironment, returnedHash, src);
+					_allStatistics[sectionName].RegisterGet(requester, requestorEnvironment, returnedHash, source);
 				}
 			}
 			finally
@@ -226,12 +226,12 @@ namespace MySpace.ConfigurationSystem
 			_name = sectionName;
 		}
 
-		internal SectionStatistics(RequestStatistics parent, string sectionName, EndPoint requestor, string requestorEnvironment, string returnedHash, string src) : this(parent, sectionName)
+		internal SectionStatistics(RequestStatistics parent, string sectionName, EndPoint requestor, string requestorEnvironment, string returnedHash, string source) : this(parent, sectionName)
 		{
-			RegisterGet(requestor, requestorEnvironment, returnedHash, src);
+			RegisterGet(requestor, requestorEnvironment, returnedHash, source);
 		}
 
-		public string GetLastServedSrcForClient(string environmentName, IPAddress addr)
+		public string GetLastServedSourceForClient(string environmentName, IPAddress addr)
 		{
 			EnvironmentStatistics envStat;
 			string ret = null;
@@ -240,7 +240,7 @@ namespace MySpace.ConfigurationSystem
 			{
 				if (_environmentStatistics.TryGetValue(environmentName, out envStat))
 				{
-					ret = envStat.GetLastServedSrcForClient(addr);
+					ret = envStat.GetLastServedSourceForClient(addr);
 				}
 			}
 			finally
@@ -251,7 +251,7 @@ namespace MySpace.ConfigurationSystem
 			return ret;
 		}
 
-		internal void RegisterGet(EndPoint requestor, string requestorEnvironment, string returnedHash, string src)
+		internal void RegisterGet(EndPoint requestor, string requestorEnvironment, string returnedHash, string source)
 		{
 			EnvironmentStatistics environmentStats;
 			_sectionStatsLock.EnterReadLock();
@@ -259,7 +259,7 @@ namespace MySpace.ConfigurationSystem
 			{
 				if (_environmentStatistics.TryGetValue(requestorEnvironment, out environmentStats))
 				{
-					environmentStats.RegisterGet(requestor, returnedHash, src);
+					environmentStats.RegisterGet(requestor, returnedHash, source);
 					return;
 				}
 			}
@@ -276,12 +276,12 @@ namespace MySpace.ConfigurationSystem
 			{
 				if (!_environmentStatistics.ContainsKey(requestorEnvironment)) //but it might've been while we were getting the lock
 				{
-					environmentStats = new EnvironmentStatistics(this, _name, requestorEnvironment, requestor, returnedHash, src);
+					environmentStats = new EnvironmentStatistics(this, _name, requestorEnvironment, requestor, returnedHash, source);
 					_environmentStatistics.Add(requestorEnvironment, environmentStats);
 				}
 				else
 				{
-					_environmentStatistics[requestorEnvironment].RegisterGet(requestor, returnedHash, src);
+					_environmentStatistics[requestorEnvironment].RegisterGet(requestor, returnedHash, source);
 				}
 			}
 			finally
@@ -366,12 +366,12 @@ namespace MySpace.ConfigurationSystem
 			_environmentName = environmentName;
 		}
 
-		internal EnvironmentStatistics(SectionStatistics parent, string sectionName, string environmentName, EndPoint requestor, string returnedHash, string src) : this(parent, sectionName, environmentName)
+		internal EnvironmentStatistics(SectionStatistics parent, string sectionName, string environmentName, EndPoint requestor, string returnedHash, string source) : this(parent, sectionName, environmentName)
 		{
-			RegisterGet(requestor, returnedHash, src);
+			RegisterGet(requestor, returnedHash, source);
 		}
 
-		public string GetLastServedSrcForClient(IPAddress addr)
+		public string GetLastServedSourceForClient(IPAddress addr)
 		{
 			ClientStatistics clientStat;
 			string ret = null;
@@ -380,7 +380,7 @@ namespace MySpace.ConfigurationSystem
 			{
 				if (_clientStatistics.TryGetValue(addr, out clientStat))
 				{
-					ret = clientStat.LastSrc;
+					ret = clientStat.LastSource;
 				}
 			}
 			finally
@@ -391,7 +391,7 @@ namespace MySpace.ConfigurationSystem
 			return ret;
 		}
 
-		internal void RegisterGet(EndPoint requester, string returnedHash, string src)
+		internal void RegisterGet(EndPoint requester, string returnedHash, string source)
 		{
 			IPEndPoint ipRequester = requester as IPEndPoint;
 			ClientStatistics clientStats;
@@ -404,7 +404,7 @@ namespace MySpace.ConfigurationSystem
 				{
 					if (_clientStatistics.TryGetValue(address, out clientStats))
 					{
-						clientStats.RegisterGet(returnedHash, src);
+						clientStats.RegisterGet(returnedHash, source);
 					}
 
 				}
@@ -420,12 +420,12 @@ namespace MySpace.ConfigurationSystem
 				{
 					if (!_clientStatistics.ContainsKey(address)) //but it might've been added while we got the lock
 					{
-						clientStats = new ClientStatistics(this, address, returnedHash, src);
+						clientStats = new ClientStatistics(this, address, returnedHash, source);
 						_clientStatistics.Add(address, clientStats);
 					}
 					else
 					{
-						_clientStatistics[address].RegisterGet(returnedHash, src);
+						_clientStatistics[address].RegisterGet(returnedHash, source);
 					}
 				}
 				finally
@@ -500,7 +500,7 @@ namespace MySpace.ConfigurationSystem
 		long _getCount;
 		DateTime _lastGet = DateTime.MinValue;
 		string _lastHash;
-		string _lastSrc;
+		string _lastSource;
 		readonly IPAddress _address;
 		[NonSerialized] ReaderWriterLockSlim _clientStatsLock = new ReaderWriterLockSlim(LockRecursionPolicy.NoRecursion);
 
@@ -516,14 +516,14 @@ namespace MySpace.ConfigurationSystem
 			_address = address;
 		}
 
-		internal ClientStatistics(EnvironmentStatistics parent, IPAddress address, string returnedHash, string src) : this(parent, address)
+		internal ClientStatistics(EnvironmentStatistics parent, IPAddress address, string returnedHash, string source) : this(parent, address)
 		{
-			RegisterGet(returnedHash, src);
+			RegisterGet(returnedHash, source);
 		}
 
-		public string LastSrc { get { return _lastSrc; } }
+		public string LastSource { get { return _lastSource; } }
 
-		internal void RegisterGet(string returnedHash, string src)
+		internal void RegisterGet(string returnedHash, string source)
 		{
 			_clientStatsLock.EnterWriteLock();
 			try
@@ -534,7 +534,7 @@ namespace MySpace.ConfigurationSystem
 				{
 					_lastGet = now;
 					_lastHash = returnedHash;
-					_lastSrc = src;
+					_lastSource = source;
 				}
 			}
 			finally

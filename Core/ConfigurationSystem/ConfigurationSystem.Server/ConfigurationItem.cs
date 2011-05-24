@@ -20,14 +20,14 @@ namespace MySpace.ConfigurationSystem
 		private static readonly LogWrapper log = new LogWrapper();
 
 		internal readonly string Name;
-		private readonly string _src;
+		private readonly string _source;
 		private string _data;
 		private string _encryptedData;
 		private byte[] _dataBytes;
 		private byte[] _encryptedDataBytes;
 
 		private bool _generic;
-		internal string Src { get { return _src; } }
+		internal string Source { get { return _source; } }
 		internal DateTime LastUpdate { get; private set; }
 		internal bool Encrypt { get; private set; }
 		internal int TimeToLive { get; set; }
@@ -52,12 +52,12 @@ namespace MySpace.ConfigurationSystem
 		}
 
 
-		internal ConfigurationItem(string name, string src, string environment, bool encrypt, int timeToLive)
+		internal ConfigurationItem(string name, string source, string environment, bool encrypt, int timeToLive)
 		{
 			RestoreFields(new StreamingContext());
 			LastUpdate = DateTime.MinValue;
 			TimeToLive = timeToLive;
-			_src = src;
+			_source = source;
 			Environment = environment;
 			Encrypt = encrypt;
 			Name = name;
@@ -82,7 +82,7 @@ namespace MySpace.ConfigurationSystem
 					{
 						byte[] newBytes;
 						string errorMessage;
-						if(!provider.TryGetDataBytes(_src, out newBytes, out errorMessage))
+						if(!provider.TryGetDataBytes(_source, out newBytes, out errorMessage))
 						{
 							ErrorMessage = errorMessage;
 						}
@@ -100,7 +100,7 @@ namespace MySpace.ConfigurationSystem
 			}
 			catch (Exception e)
 			{
-				log.ErrorFormat("Exception updating Configuration Item {0}: {1}", _src, e);
+				log.ErrorFormat("Exception updating Configuration Item {0}: {1}", _source, e);
 			}
 		}
 

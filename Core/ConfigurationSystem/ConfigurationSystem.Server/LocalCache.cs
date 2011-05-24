@@ -161,11 +161,11 @@ namespace MySpace.ConfigurationSystem
 
 			//I don't know how the cache can get into this state
 			//but I observed it once during testing. The item was in cache, but had 
-			//no src value and no data bytes, so it would always return empty, and
+			//no source value and no data bytes, so it would always return empty, and
 			//could not be updated. This is a guard against that condition.
-			if(item != null && string.IsNullOrEmpty(item.Src)) 
+			if(item != null && string.IsNullOrEmpty(item.Source)) 
 			{
-				log.ErrorFormat("Item with key {0} found with no src. Removing from cache. ", key);
+				log.ErrorFormat("Item with key {0} found with no source. Removing from cache. ", key);
 				cacheLock.EnterWriteLock();
 				try
 				{
@@ -227,8 +227,8 @@ namespace MySpace.ConfigurationSystem
 				{
 					for (int i = 0; i < obsoleteItems.Count; i++)
 					{
-						if (cache.ContainsKey(obsoleteItems[i].Src))
-							cache.Remove(obsoleteItems[i].Src);
+						if (cache.ContainsKey(obsoleteItems[i].Source))
+							cache.Remove(obsoleteItems[i].Source);
 					}
 				}
 				finally

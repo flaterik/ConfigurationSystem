@@ -40,7 +40,7 @@ namespace MySpace.ConfigurationSystem
 		
 		static readonly bool EncryptorAvailable;
 		static readonly AsyncCallback getContextCallback = GetContextCallback;
-		static readonly ConfigurationSystemServerConfig config = (ConfigurationSystemServerConfig)ConfigurationManager.GetSection("ConfigurationSystemServerConfig");
+		internal static readonly ConfigurationSystemServerConfig config = (ConfigurationSystemServerConfig)ConfigurationManager.GetSection("ConfigurationSystemServerConfig");
 		static readonly string listenPrefix;
 		static readonly HttpServerCounters counters;
 		static readonly string StatisticsFileName = "StatisticsFileBackup-" + AssemblyVersion;
@@ -53,19 +53,16 @@ namespace MySpace.ConfigurationSystem
 
 		static HttpServer()
 		{
-			compressionThreshold = (config == null) ?
-				ConfigurationSystemServerConfig.DefaultCompressionThreshold :
-				config.CompressionThreshold;
+			if(config == null)
+				config = new ConfigurationSystemServerConfig(); //if there is no configuration just run with defaults
+
+			compressionThreshold = config.CompressionThreshold;
 			
-			listenPrefix = (config == null) ?
-				   string.Format("http://{0}:{1}/", ConfigurationSystemServerConfig.DefaultPrefix, ConfigurationSystemServerConfig.DefaultPort) :
-				   string.Format("http://{0}:{1}/", config.Prefix, config.Port);
+			listenPrefix = string.Format("http://{0}:{1}/", config.Prefix, config.Port);
 
 			counters = new HttpServerCounters();
 			
-			counters.Initialize((config == null) ?
-				   string.Format("Port {0}", ConfigurationSystemServerConfig.DefaultPort) :
-				   string.Format("Port {0}", config.Port)); //performance monitor didn't like to play nice with the special character common to the full prefixes
+			counters.Initialize(string.Format("Port {0}", config.Port)); 
 
 			if (!Encryptor.IsKeyProviderAvailable(config.KeyProviderTypeName))
 			{
@@ -642,7 +639,7 @@ namespace MySpace.ConfigurationSystem
 						responseEncrypted = false;
 					}
 
-					RegisterClientGet(requester, currentEnvironment, sectionItem.Name, sectionItem.HashString, sectionItem.Src);
+					RegisterClientGet(requester, currentEnvironment, sectionItem.Name, sectionItem.HashString, sectionItem.Source);
 				}
 				else
 				{
@@ -687,13 +684,13 @@ namespace MySpace.ConfigurationSystem
 			GetResultInfo resultInfo = state as GetResultInfo; 
 			if (resultInfo != null)
 			{
-				clientStatistics.RegisterGet(resultInfo.Requestor, resultInfo.RequestorEnvironment, resultInfo.SectionName, resultInfo.ReturnedHash, resultInfo.Src);
+				clientStatistics.RegisterGet(resultInfo.Requestor, resultInfo.RequestorEnvironment, resultInfo.SectionName, resultInfo.ReturnedHash, resultInfo.Source);
 			}
 		}
 		
-		private static void RegisterClientGet(EndPoint requester, string requestorEnvironment, string sectionName, string returnedHash, string src)
+		private static void RegisterClientGet(EndPoint requester, string requestorEnvironment, string sectionName, string returnedHash, string source)
 		{
-			ThreadPool.UnsafeQueueUserWorkItem(registerGetCallback, new GetResultInfo(requester, requestorEnvironment, sectionName, returnedHash, src));
+			ThreadPool.UnsafeQueueUserWorkItem(registerGetCallback, new GetResultInfo(requester, requestorEnvironment, sectionName, returnedHash, source));
 		}
 		
 		private static void ExtractRequestParameters(string requestUri, 
@@ -775,15 +772,15 @@ namespace MySpace.ConfigurationSystem
 		internal string SectionName;
 		internal string ReturnedHash;
 		internal string RequestorEnvironment;
-		internal string Src; // Source location of the result
+		internal string Source;
 
-		internal GetResultInfo(EndPoint requestor, string requestorEnvironment, string sectionName, string returnedHash, string src)
+		internal GetResultInfo(EndPoint requestor, string requestorEnvironment, string sectionName, string returnedHash, string source)
 		{
 			Requestor = requestor;
 			RequestorEnvironment = requestorEnvironment;
 			SectionName = sectionName;
 			ReturnedHash = returnedHash;
-			Src = src;
+			Source = source;
 		}
 
 	}

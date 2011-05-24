@@ -5,11 +5,11 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{F5945596-5A79-4724-9022-02C9F1692A7B}</ProjectGuid>
-    <OutputType>Library</OutputType>
+    <ProjectGuid>{D7949576-A6C8-4265-9772-5A7815CB8BF5}</ProjectGuid>
+    <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>MySpace.ConfigurationSystem</RootNamespace>
-    <AssemblyName>MySpace.ConfigurationSystem.Server</AssemblyName>
+    <AssemblyName>MySpace.ConfigurationSystem.TestConsoleServer</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SccProjectName>SAK</SccProjectName>
@@ -40,7 +40,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\..\..\_drop\</OutputPath>
+    <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -50,7 +50,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>..\..\..\_drop\</OutputPath>
+    <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -58,7 +58,7 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>..\..\..\_drop\</OutputPath>
+    <OutputPath>bin\x86\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <DebugType>full</DebugType>
     <PlatformTarget>x86</PlatformTarget>
@@ -66,9 +66,10 @@
     <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <UseVSHostingProcess>true</UseVSHostingProcess>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
-    <OutputPath>..\..\..\_drop\</OutputPath>
+    <OutputPath>bin\x86\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
@@ -79,63 +80,36 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="MySpace.ConfigurationSystem.Encryption, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL" />
-    <Reference Include="MySpace.Logging, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\_drop\MySpace.Logging.dll</HintPath>
-    </Reference>
-    <Reference Include="MySpace.ResourcePool, Version=1.0.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\_drop\MySpace.ResourcePool.dll</HintPath>
-    </Reference>
-    <Reference Include="MySpace.Shared, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL" />
     <Reference Include="System" />
-    <Reference Include="System.configuration" />
-    <Reference Include="System.Configuration.Install" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.DirectoryServices" />
-    <Reference Include="System.Management" />
-    <Reference Include="System.Web" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ClientStatistics.cs" />
-    <Compile Include="ConfigurationItem.cs" />
-    <Compile Include="EnvironmentHelpers\DirectoryHelper.cs" />
-    <Compile Include="EnvironmentHelpers\DnsHelper.cs" />
-    <Compile Include="EnvironmentHelpers\EndPointProcessor.cs" />
-    <Compile Include="EnvironmentHelpers\SearchResultState.cs" />
-    <Compile Include="EnvironmentHelpers\VipHelper.cs" />
-    <Compile Include="HandleWithCount.cs" />
-    <Compile Include="LocalCache.cs" />
-    <Compile Include="Providers\FileProvider.cs" />
-    <Compile Include="Providers\Providers.cs" />
-    <Compile Include="SectionProviderFactory.cs" />
-    <Compile Include="ConfigurationSystemServerConfig.cs">
-      <DependentUpon>ConfigurationSystemServerConfig.xsd</DependentUpon>
-    </Compile>
-    <Compile Include="CounterInstaller.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="CounterInstaller.Designer.cs">
-      <DependentUpon>CounterInstaller.cs</DependentUpon>
-    </Compile>
-    <Compile Include="HttpServer.cs" />
-    <Compile Include="HttpServerCounters.cs" />
-    <Compile Include="Providers\IConfigurationSystemSectionProvider.cs" />
+    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SectionMapper.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="ConfigurationSystemServerConfig.xsd" />
+    <ProjectReference Include="..\ConfigurationSystem.Server\ConfigurationSystem.Server.csproj">
+      <Project>{F5945596-5A79-4724-9022-02C9F1692A7B}</Project>
+      <Name>ConfigurationSystem.Server</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="favicon.ico">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <None Include="SectionMapping.xsd">
+    <None Include="App.config">
       <SubType>Designer</SubType>
+    </None>
+    <Content Include="ConfigurationSystem-XmlSerializerReplacementHandlerTest.dev.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="ConfigurationSystem-XmlSerializerReplacementHandlerTest.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Include="Logging.ConfigurationServer.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="MySection.config">
+      <SubType>Designer</SubType>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -154,6 +128,12 @@
       <ProductName>Windows Installer 3.1</ProductName>
       <Install>true</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="SectionMapping.xml">
+      <SubType>Designer</SubType>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

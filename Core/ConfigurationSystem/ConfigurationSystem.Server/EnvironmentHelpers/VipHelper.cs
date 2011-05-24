@@ -7,6 +7,7 @@ using System.Text;
 
 namespace MySpace.ConfigurationSystem.EnvironmentHelpers
 {
+	//TODO Make this a general purpose web service helper
 	public class VipHelper
 	{
 		private static readonly LogWrapper log = new LogWrapper();
