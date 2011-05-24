@@ -16,7 +16,7 @@ namespace MySpace.ConfigurationSystem
 	public static class SectionMapper
 	{
 		private static readonly LogWrapper log = new LogWrapper();
-		private static readonly ConfigurationSystemServerConfig config = (ConfigurationSystemServerConfig)ConfigurationManager.GetSection("ConfigurationSystemServerConfig");
+		private static readonly ConfigurationSystemServerConfig config;
 		private const int SECTION_MAPPING_LIFETIME = 60; // TTL before reload in seconds
 		private static readonly object sectionMappingLock = new object();
 
@@ -29,6 +29,7 @@ namespace MySpace.ConfigurationSystem
 
 		static SectionMapper()
 		{
+			config = HttpServer.config;
 			ReloadSectionMapper();
 		}
 
@@ -39,7 +40,7 @@ namespace MySpace.ConfigurationSystem
 			string path = GetPathForSectionAndEndpoint(item.Name, null, out encrypt, ref environment);
 			if (string.IsNullOrEmpty(path))
 				return false;
-			return path == item.Src && item.Encrypt == encrypt;
+			return path == item.Source && item.Encrypt == encrypt;
 		}
 
 		public static string GetPathForSectionAndEndpoint(string sectionName, IPEndPoint endPoint, out bool encrypt, ref string environmentName)
@@ -71,7 +72,7 @@ namespace MySpace.ConfigurationSystem
 			if (environmentName == null && endPoint != null && mappingDetails._endpointToEnvironmentMapping.TryGetValue(endPoint.Address, out environment))
 			{
 				if (!section.Exceptions.TryGetValue(environment.Name, out path))
-					path = section.DefaultSrc;
+					path = section.DefaultSource;
 			}
 			else
 			{
@@ -81,21 +82,21 @@ namespace MySpace.ConfigurationSystem
 					if (mappingDetails._environmentMapping.TryGetValue(environmentName, out environment))
 					{
 						if(false == section.Exceptions.TryGetValue(environmentName, out path))
-							path = section.DefaultSrc;
+							path = section.DefaultSource;
 					} 
 					else 
 					{
-						throw new ArgumentException(string.Format("requested environment '{0}' does not exist. env parameter is case sensitve.", environmentName));
+						throw new ArgumentException(string.Format("Requested environment '{0}' does not exist. env parameter is case sensitve.", environmentName));
 					}
 				}
 				else
 				{
 					if (mappingDetails._defaultEnvironment == null)
 					{
-						log.WarnFormat("SectionMapper.GetPathForSectionAndEndpoint({0}, {1}) no mapping and NO default environment in config.", section, endPoint);
+						log.WarnFormat("No mapping and NO default environment in config while getting section {0} for endpoint {1}", section, endPoint);
 						return null;
 					}
-					path = section.DefaultSrc;
+					path = section.DefaultSource;
 					environment = mappingDetails._defaultEnvironment;
 				}
 
@@ -103,12 +104,12 @@ namespace MySpace.ConfigurationSystem
 
 			environmentName = environment.Name;
 
-			string slowRollSrc = IsParticipatingInSlowRoll(environment, section, endPoint);
+			string slowRollSource = IsParticipatingInSlowRoll(environment, section, endPoint);
 			
-			if (slowRollSrc == null)
+			if (slowRollSource == null)
 				return ReplacePathTokens(path, environment.Name);
 			
-			return ReplacePathTokens(slowRollSrc, environment.Name);
+			return ReplacePathTokens(slowRollSource, environment.Name);
 
 		}
 
@@ -124,17 +125,18 @@ namespace MySpace.ConfigurationSystem
 					slowroll.Start <= DateTime.Now)
 				{
 					if (slowroll.End <= DateTime.Now)
-						return slowroll.Src; // Slow roll complete, all hosts now recieve this value
+						return slowroll.Source; // Slow roll complete, all hosts now recieve this value
 
-					// Is this host already assigned the slowroll src?
-					string lastSrc = HttpServer.ClientStats.GetLastServedSrcForClient(environment.Name, section.Name, endPoint.Address);
-					if (lastSrc != null)
-						return lastSrc;
+					// Is this host already assigned the slowroll source?
+					string lastSource = HttpServer.ClientStats.GetLastServedSourceForClient(environment.Name, section.Name, endPoint.Address);
+					if (lastSource != null) //TODO this looks like a bug, where if a client has EVER been served a config it will continue being served that config. Test.
+						return lastSource;
 
-					// Otherwise, Is this host randomly elected to participate
+					// Otherwise, Is this host randomly elected to participate.
+					//TODO this seems statistically suspect
 					double pct = ((DateTime.Now - slowroll.Start).Ticks) / (double)((slowroll.End - slowroll.Start).Ticks);
 					if (rand.NextDouble() < pct)
-						return slowroll.Src;
+						return slowroll.Source;
 				}
 			}
 
@@ -165,7 +167,8 @@ namespace MySpace.ConfigurationSystem
 				try
 				{
 					IPAddress[] myAddresses = Dns.GetHostAddresses(Dns.GetHostName());
-					IPEndPoint ep = new IPEndPoint(myAddresses[0], ConfigurationSystemServerConfig.DefaultPort);
+					ConfigurationSystemServerConfig config = new ConfigurationSystemServerConfig(); 
+					IPEndPoint ep = new IPEndPoint(myAddresses[0], config.Port);
 					foreach (KeyValuePair<string, SectionInfo> section in mappingDetails._sectionMapping)
 					{
 						SectionInfo Section = section.Value;
@@ -264,7 +267,7 @@ namespace MySpace.ConfigurationSystem
 										Name = sectionNode.Attributes.GetAttributeOrNull("name"),
 										ConfigurationSystemSectionProvider =
 											Providers.GetProviderByName(providerName),
-										DefaultSrc = sectionNode.Attributes.GetAttributeOrNull("src"),
+										DefaultSource = sectionNode.Attributes.GetAttributeOrNull("source"),
 										IsGeneric = sectionNode.Attributes.GetAttributeOrFalse("generic"),
 										Encrypt =  sectionNode.Attributes.GetAttributeOrFalse("encrypt")
 									};
@@ -274,21 +277,21 @@ namespace MySpace.ConfigurationSystem
 					if (exceptionNode.Name == "exception")
 					{
 						string environment = exceptionNode.Attributes.GetAttributeOrNull("environment");
-						string src = exceptionNode.Attributes.GetAttributeOrNull("src");
+						string source = exceptionNode.Attributes.GetAttributeOrNull("source");
 						
-						if (environment != null && src != null)
+						if (environment != null && source != null)
 						{
-							info.Exceptions[environment] = src;
+							info.Exceptions[environment] = source;
 						}
 						else
 						{
-							log.WarnFormat("SectionMapper.ReloadSectionMapper(): failed to load environment or src from exception element in {0} {1} {2}", info.Name, environment, src);
+							log.WarnFormat("Failed to load environment or source from exception element in {0} {1} {2}", info.Name, environment, source);
 						}
 					}
 					else if (exceptionNode.Name == "slowroll")
 					{
 						string environment = exceptionNode.Attributes.GetAttributeOrNull("environment");
-						string src = exceptionNode.Attributes.GetAttributeOrNull("src");
+						string source = exceptionNode.Attributes.GetAttributeOrNull("source");
 						string startString = exceptionNode.Attributes.GetAttributeOrNull("start");
 						string endString = exceptionNode.Attributes.GetAttributeOrNull("end");
 
@@ -299,20 +302,20 @@ namespace MySpace.ConfigurationSystem
 
 						if (startString == null || !DateTime.TryParse(startString, out start))
 						{
-							log.WarnFormat("SectionMapper.ReloadSectionMapper(): failed to load START date in slowroll tag name={0} env={1}", info.Name, environment);
+							log.WarnFormat("Failed to load START date in slowroll tag name={0} env={1}", info.Name, environment);
 							start = DateTime.Now;
 						}
 
 						if (endString == null || !DateTime.TryParse(endString, out end))
 						{
-							log.WarnFormat("SectionMapper.ReloadSectionMapper(): failed to load END date in slowroll tag name={0} env={1}", info.Name, environment);
+							log.WarnFormat("Failed to load END date in slowroll tag name={0} env={1}", info.Name, environment);
 							end = DateTime.Now;
 						}
 
 						SlowRollInfo slowroll = new SlowRollInfo
 						{
 							Environment = environment,
-							Src = src,
+							Source = source,
 							Start = start,
 							End = end
 						};
@@ -559,7 +562,7 @@ namespace MySpace.ConfigurationSystem
 		}
 		public string Name { get; set; }
 		public IConfigurationSystemSectionProvider ConfigurationSystemSectionProvider { get; set; }
-		public string DefaultSrc { get; set; }
+		public string DefaultSource { get; set; }
 		public bool IsGeneric { get; set; }
 		public Dictionary<string, string> Exceptions { get; set; }
 		public Dictionary<string, SlowRollInfo> SlowRolls { get; set; }
@@ -583,126 +586,12 @@ namespace MySpace.ConfigurationSystem
 	public class SlowRollInfo
 	{
 		public string Environment { get; set; }
-		public string Src { get; set; }
+		public string Source { get; set; }
 		public DateTime Start { get; set; }
 		public DateTime End { get; set; }
 	}
 
-	internal static class EndpointProcessor
-	{
-		private static readonly LogWrapper log = new LogWrapper();
-		internal static void ProcessEndPointNode(object state)
-		{
-			HandleWithNode handle = state as HandleWithNode;
-			XmlNode endpointNode =null;
-
-			if (handle != null)
-			{
-				try
-				{
-					endpointNode = handle._node;
-					EnvironmentInfo environment = handle._environment;
-					
-					if (endpointNode.Name == "endpoint")
-					{
-						IPAddress[] addresses = DnsHelper.ResolveIPAddress(endpointNode.Attributes.GetAttributeOrNull("address"));
-
-						if (addresses != null)
-						{
-							lock (handle._endpointToEnvironmentMapping)
-							{
-								foreach (IPAddress addr in addresses)
-								{
-									AddAddressToMapping(addr, environment, handle._endpointToEnvironmentMapping);
-								}
-							}
-						}
-						else
-							log.WarnFormat("Failed to get any address for 'endpoint' node {0} in {1}",
-										   endpointNode.Attributes.GetAttributeOrNull("address"), environment.Name);
-					}
-					else if (endpointNode.Name == "directorygroup")
-					{
-						IPAddress[] addresses =
-							DirectoryHelper.GetIPAddressesForDirectoryFilter(endpointNode.Attributes.GetAttributeOrNull("root"),
-																			 endpointNode.Attributes.GetAttributeOrNull("filter"));
-						if (addresses != null)
-						{
-							lock (handle._endpointToEnvironmentMapping)
-							{
-								foreach (IPAddress addr in addresses)
-								{
-									AddAddressToMapping(addr, environment, handle._endpointToEnvironmentMapping);
-								}
-							}
-						}
-						else
-							log.WarnFormat(
-								"Failed to get any address for 'directorygroup' node {0} in {1}",
-								endpointNode.Attributes.GetAttributeOrNull("address"), environment.Name);
-					}
-					else if (endpointNode.Name == "vip")
-					{
-						VipHelper vipHelper = new VipHelper();
-						IPAddress[] addresses =
-							vipHelper.GetIPAddressesForVip(endpointNode.Attributes.GetAttributeOrNull("name"));
-						if (addresses != null)
-						{
-							lock (handle._endpointToEnvironmentMapping)
-							{
-								foreach (IPAddress addr in addresses)
-								{
-									AddAddressToMapping(addr, environment, handle._endpointToEnvironmentMapping);
-								}
-							}
-						}
-						else
-							log.WarnFormat(
-								"Failed to get any address for 'vip' node {0} in {1}",
-								endpointNode.Attributes.GetAttributeOrNull("name"), environment.Name);
-					}
-				}
-				catch (Exception e)
-				{
-					log.ErrorFormat("Exception processing endpoint {0}: {1}", endpointNode, e);
-				}
-				finally
-				{
-					handle._handle.Decrement();
-				}
-			}
-		}
-
-
-		[DebuggerStepThrough]
-		private static string GetAttributeOrNull(this XmlAttributeCollection collection, string attrName)
-		{
-			try
-			{
-				return collection[attrName].Value;
-			}
-			catch
-			{
-				return null;
-			}
-		}
-
-		private static void AddAddressToMapping(IPAddress addr, EnvironmentInfo environment, Dictionary<IPAddress, EnvironmentInfo> mapping)
-		{
-			EnvironmentInfo existingEnvironment;
-			if (!mapping.TryGetValue(addr, out existingEnvironment))
-			{
-				mapping[addr] = environment;
-			}
-			else
-			{
-				if(existingEnvironment.Name != environment.Name)
-				{
-					log.WarnFormat("Endpoint {0} is defined in both '{1}' and '{2}'. It will be treated as a member of '{1}'", addr, existingEnvironment.Name, environment.Name);	
-				}
-			}
-		}
-	}
+	
 
 	internal class HandleWithNode
 	{

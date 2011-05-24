@@ -87,7 +87,7 @@ namespace MySpace.ConfigurationSystem.EnvironmentHelpers
 		}
 		
 
-		private static DirectorySearcher GetDirectorySearcher(string root, string basefilter)
+		private static DirectorySearcher GetDirectorySearcher(string root, string filter)
 		{
 			DirectorySearcher searcher;
 			if (root == null)
@@ -97,15 +97,8 @@ namespace MySpace.ConfigurationSystem.EnvironmentHelpers
 			searcher.Tombstone = false;
 			searcher.CacheResults = false;
 			searcher.PropertiesToLoad.AddRange(new[] { "cn", "dnshostname" });
-			searcher.Filter = BuildFullFilter(basefilter);
+			searcher.Filter = filter;
 			return searcher;
-		}
-
-		private static string BuildFullFilter(string baseFilter)
-		{
-			//return string.Format("(&(objectClass=computer)(!(userAccountControl:1.2.840.113556.1.4.803:=2)){0})", baseFilter);
-			//return string.Format("(&(objectClass=computer){0})", baseFilter);
-			return baseFilter;
 		}
 	}
 }

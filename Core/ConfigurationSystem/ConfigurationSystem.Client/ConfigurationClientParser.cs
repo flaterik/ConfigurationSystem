@@ -7,7 +7,7 @@ using MySpace.Logging;
 
 namespace MySpace.ConfigurationSystem
 {
-	internal class  ConfigurationClientParser
+	internal class ConfigurationClientParser
 	{
 		static readonly Logging.LogWrapper log = new Logging.LogWrapper();
 		internal static void PopulateGenericSettingCollection(ref ConfigurationItem item)

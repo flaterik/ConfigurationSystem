@@ -8,11 +8,7 @@ namespace MySpace.ConfigurationSystem
 {
 	public class ConfigurationSystemServerConfig : ConfigurationSection
 	{
-		public static readonly int DefaultPort = 9000;
-		public static readonly string DefaultPrefix = "*";
-		public static readonly int DefaultCompressionThreshold = 10240;
 		public static readonly short DefaultTimeToLive = 360;
-		private static readonly LogWrapper log = new LogWrapper();
 
 		[ConfigurationProperty("port", DefaultValue = "9000", IsRequired = false)]
 		public int Port
@@ -54,14 +50,14 @@ namespace MySpace.ConfigurationSystem
 			set { this["tfsUserDomain"] = value; }
 		}
 
-		[ConfigurationProperty("tfsUserName", IsRequired = true)]
+		[ConfigurationProperty("tfsUserName", IsRequired = false)]
 		public string TfsUserName
 		{
 			get { return (string)this["tfsUserName"]; }
 			set { this["tfsUserName"] = value; }
 		}
 
-		[ConfigurationProperty("tfsUserPassword", IsRequired = true)]
+		[ConfigurationProperty("tfsUserPassword", IsRequired = false)]
 		public string TfsUserPassword
 		{
 			get { return rot13((string)this["tfsUserPassword"]); }

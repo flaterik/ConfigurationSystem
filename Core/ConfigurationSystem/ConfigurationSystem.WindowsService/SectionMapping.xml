@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<configurationsystem>
+  <environments>
+    <environment name="Production" default="true" comment="default environment"/>
+
+    <environment name="Development" default="false">      
+      <endpoint address="127.0.0.1"/>
+      <endpoint address="::1"/>
+    </environment>
+  </environments>
+	
+  <sectionmapping>
+		<section
+      name="XmlSerializerReplacementHandlerTest"
+      provider="FileProvider"
+      source="ConfigurationSystem-XmlSerializerReplacementHandlerTest.config"
+      comment="Test loading the section from a local file">
+			<exception environment="Development" source="ConfigurationSystem-XmlSerializerReplacementHandlerTest.dev.config"/>
+		</section>
+
+		<section
+			name="MySection"
+			provider="FileProvider"
+			source="MySection.config"
+			comment="For the XmlSerializerExample project"
+      />
+  </sectionmapping>
+	
+	
+</configurationsystem>
