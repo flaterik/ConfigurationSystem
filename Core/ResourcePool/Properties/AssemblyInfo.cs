@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("ResourcePool")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("MySpace.ResourcePool")]
+[assembly: AssemblyDescription("Provides a method for reusing resources, such as memory streams")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("MySpace")]
-[assembly: AssemblyProduct("ResourcePool")]
+[assembly: AssemblyProduct("MySpace Shared Libraries")]
 [assembly: AssemblyCopyright("Copyright © MySpace 2006")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

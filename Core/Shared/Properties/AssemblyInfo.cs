@@ -5,13 +5,13 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Shared")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("MySpace.Shared")]
+[assembly: AssemblyDescription("MySpace Open Sourced Common Libraries")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("MySpace")]
-[assembly: AssemblyProduct("Shared Libraries")]
-[assembly: AssemblyCopyright("MySpace")]
-[assembly: AssemblyTrademark("Copyright © MySpace 2010")]
+[assembly: AssemblyProduct("MySpace Shared Libraries")]
+[assembly: AssemblyCopyright("Copyright © MySpace 2010")]
+[assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
 // Setting ComVisible to false makes the types in this assembly not visible 
