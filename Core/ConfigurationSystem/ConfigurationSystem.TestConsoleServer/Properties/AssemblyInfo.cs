@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("ConfigurationSystem.TestConsoleServer")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("MySpace.ConfigurationSystem.TestConsoleServer")]
+[assembly: AssemblyDescription("A simple console host for the Configuration System Http Server")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("ConfigurationSystem.TestConsoleServer")]
-[assembly: AssemblyCopyright("Copyright ©  2009")]
+[assembly: AssemblyProduct("MySpace Configuration System")]
+[assembly: AssemblyCopyright("Copyright © MySpace 2010")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

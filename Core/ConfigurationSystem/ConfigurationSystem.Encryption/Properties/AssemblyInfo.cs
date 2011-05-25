@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("ConfigurationSystem.Encryptor")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("MySpace.ConfigurationSystem.Encryption")]
+[assembly: AssemblyDescription("Provides encryption services for the Configuration System")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Microsoft")]
-[assembly: AssemblyProduct("ConfigurationSystem.Encryptor")]
-[assembly: AssemblyCopyright("Copyright © Microsoft 2011")]
+[assembly: AssemblyCompany("MySpace")]
+[assembly: AssemblyProduct("MySpace Configuration System")]
+[assembly: AssemblyCopyright("Copyright © MySpace 2010")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

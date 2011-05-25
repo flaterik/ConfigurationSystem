@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("ConfigurationSystem.Client")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("MySpace.ConfigurationSystem.Client")]
+[assembly: AssemblyDescription("A .Net client to the Configuration System server")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("MySpace")]
 [assembly: AssemblyProduct("MySpace Configuration System")]
-[assembly: AssemblyCopyright("")]
+[assembly: AssemblyCopyright("Copyright © MySpace 2010")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

@@ -6,11 +6,11 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("XmlSerializerExample")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("An example of how to use the XmlSerializerReplacementHandler component of the configuration system")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Microsoft")]
-[assembly: AssemblyProduct("XmlSerializerExample")]
-[assembly: AssemblyCopyright("Copyright © Microsoft 2010")]
+[assembly: AssemblyCompany("MySpace")]
+[assembly: AssemblyProduct("Myspace Configuration System")]
+[assembly: AssemblyCopyright("")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
