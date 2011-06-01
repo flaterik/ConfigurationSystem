@@ -165,6 +165,11 @@ namespace MySpace.ConfigurationSystem
 				{
 					return null;
 				}
+				catch (Exception e)
+				{
+					log.ErrorFormat("Exception reading section {0} from disk: {1}", sectionName, e);
+					return null;
+				}
 				finally
 				{
 					if (itemFile != null)

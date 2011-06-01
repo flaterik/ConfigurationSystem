@@ -6,8 +6,7 @@ using System.Collections.Generic;
 namespace MySpace.ConfigurationSystem
 {
     internal class ConfigurationItem
-    {
-        static readonly MD5 md5 = MD5.Create();
+    {        
         static readonly Encoding encoding = new UTF8Encoding(false);
 
         private readonly string sectionName;
@@ -35,7 +34,10 @@ namespace MySpace.ConfigurationSystem
 			set
 			{
 				sectionBytes = encoding.GetBytes(value);
-				sectionHash = md5.ComputeHash(sectionBytes);
+				using (var md5 = MD5.Create())
+				{
+					sectionHash = md5.ComputeHash(sectionBytes);
+				}				
 				sectionHashString = GetHashString(sectionHash);
 				sectionString = value;
 			}
@@ -71,7 +73,10 @@ namespace MySpace.ConfigurationSystem
             this.sectionString = sectionString;
 
         	sectionBytes = encoding.GetBytes(sectionString);
-            sectionHash = md5.ComputeHash(sectionBytes);
+			using (var md5 = MD5.Create())
+			{
+				sectionHash = md5.ComputeHash(sectionBytes);
+			}
             sectionHashString = GetHashString(sectionHash);
             lastChecked = DateTime.MinValue;
         }
