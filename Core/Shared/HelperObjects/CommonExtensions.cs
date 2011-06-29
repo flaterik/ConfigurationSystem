@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Xml;
 
@@ -12,6 +13,18 @@ namespace MySpace.Common
 	/// </summary>
 	public static class CommonExtensions
 	{
+		public static AssemblyName TryGetName(this Assembly assembly)
+		{
+			try
+			{
+				return assembly.GetName();
+			}
+			catch
+			{
+				return null;
+			}
+		}
+
 		/// <summary>
 		/// Reads the specified xml attribute as if it were a Boolean string.
 		/// Returns <paramref name="defaultValue"/> the value was not present or could not be parsed.

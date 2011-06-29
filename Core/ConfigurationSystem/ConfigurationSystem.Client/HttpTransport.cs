@@ -137,20 +137,18 @@ namespace MySpace.ConfigurationSystem
 				response = null;
 				if (responseCode != 304) //why it considers 304 an exception I don't know                
 				{
-					
 					switch(exResponse.StatusCode)
 					{
 						case HttpStatusCode.InternalServerError:
 							string error = ExtractResponseString(sectionName, exResponse);
 							throw new ConfigurationSystemException(sectionName, string.Format("Server returned error message: {0}", error));                            
 						case HttpStatusCode.NotFound:
-							log.ErrorFormat("Request {0} resulted in 404.", requestUri);
+							log.WarnFormat("Request {0} resulted in 404.", requestUri);
 							break;
 						default:
 							log.ErrorFormat("Exception processing request to {0}: {1}", requestUri, webex.ToString());
 							break;
 					}
-					
 				}
 			}
 			finally

@@ -214,7 +214,7 @@ namespace MySpace.Common.IO
 				int read;
 				if (readAsync)
 				{
-					var readFuture = Future<int>.FromAsyncPattern(
+					var readFuture = Future.FromAsyncPattern<int>(
 						ac => input.BeginRead(buffer, 0, buffer.Length, ac, null),
 						input.EndRead);
 					yield return readFuture;
@@ -229,7 +229,7 @@ namespace MySpace.Common.IO
 
 				if (writeAsync)
 				{
-					yield return Future<int>.FromAsyncPattern(
+					yield return Future.FromAsyncPattern(
 						ac => output.BeginWrite(buffer, 0, read, ac, null),
 						ar =>
 						{

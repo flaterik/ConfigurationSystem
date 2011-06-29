@@ -1,7 +1,6 @@
 using System;
 using System.Configuration;
 using System.IO;
-using System.Reflection;
 using System.Web;
 using System.Xml;
 using MySpace.Configuration;
@@ -88,6 +87,11 @@ namespace MySpace.ConfigurationSystem
 
 		private static TImpl LoadFromConfigServer()
 		{
+			var now = DateTime.UtcNow;
+			if (_lastGetAttempt != null && (now - _lastGetAttempt) < MissingSectionRetryInterval)
+				return null;
+			_lastGetAttempt = now;
+
 			var sectionXml = ConfigurationClient.GetSectionXml(GetSectionName());
 			if (sectionXml != null)
 			{
@@ -117,6 +121,23 @@ namespace MySpace.ConfigurationSystem
 
 			return null;
 		}
+
+		/// <summary>
+		/// Gets or sets the missing section retry interval.  If a section is not defined in
+		/// app.config/web.config and is not found on the configuration server, subsequent calls to 
+		/// <see cref="GetSection"/> will not hit the configuration server for at least this
+		/// interval.
+		/// </summary>
+		/// <value>
+		/// A <see cref="TimeSpan"/> that specifies missing section retry interval.  The default is 5 minutes.
+		/// </value>
+		public static TimeSpan MissingSectionRetryInterval
+		{
+			get { return _missingSectionRetryInterval; }
+			set { _missingSectionRetryInterval = value; }
+		}
+		private static TimeSpan _missingSectionRetryInterval = new TimeSpan(0, 5, 0);
+		private static DateTime? _lastGetAttempt;
 
 		/// <summary>
 		/// Loads the <typeparamref name="TImpl"/> section or returns a cached copy.  This method
@@ -179,9 +200,6 @@ namespace MySpace.ConfigurationSystem
 					{
 						if (remoteSectionName == string.Empty) remoteSectionName = GetSectionName();
 						var xml = ConfigurationClient.GetSectionXml(remoteSectionName);
-						if (xml == null)
-							throw new ConfigurationSystemException(GetSectionName(),
-								string.Format("Failed to get section {0} from configuration server", remoteSectionName));
 						reader = new XmlNodeReader(xml);
 						if (!reader.IsStartElement(GetSectionName()))
 							throw new ConfigurationSystemException(GetSectionName(), 
@@ -278,6 +296,7 @@ namespace MySpace.ConfigurationSystem
 			ConfigurationManager.RefreshSection(GetSectionName());
 			//clear to cause a reload
 			_section = null;
+			_lastGetAttempt = null;
 			TriggerRefresh();
 		}
 
