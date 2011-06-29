@@ -11,6 +11,7 @@ using System.IO;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Threading;
+using MySpace.Common;
 using MySpace.Common.HelperObjects;
 
 namespace MySpace.Shared.Configuration
@@ -20,6 +21,54 @@ namespace MySpace.Shared.Configuration
 	/// </summary>
 	public class XmlSerializerSectionHandler : IConfigurationSectionHandler
 	{
+		private class ConfigSection
+		{
+			private readonly object _syncRoot = new object();
+
+			private volatile object _config;
+
+			public object GetConfig(XmlNode section)
+			{
+				if (_config != null) return _config;
+				lock (_syncRoot)
+				{
+					if (_config != null) return _config;
+
+					object newConfig = GetConfigInstance(section);
+
+					try
+					{
+						System.Configuration.Configuration config;
+
+						//if the app is hosted you should be able to load a web.config.
+						if (System.Web.Hosting.HostingEnvironment.IsHosted)
+							config = WebConfigurationManager.OpenWebConfiguration(HttpRuntime.AppDomainAppVirtualPath);
+						else
+							config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
+						//TODO: figure out how to get Configuration in a service
+
+						//SectionInformation info = config.GetSection(section.Name).SectionInformation;
+						ConfigurationSection configSection = config.GetSection(section.Name);
+						if (configSection.SectionInformation.RestartOnExternalChanges == false)
+							SetupWatcher(config, configSection, newConfig);
+					}
+					//if an exception occurs here we simply have no watcher and the app pool must be reset in order to recognize config changes
+					catch (Exception exc)
+					{
+						string Message = "Exception setting up FileSystemWatcher for Section = " + (section != null ? section.Name : "Unknown Section");
+						if (log.IsErrorEnabled) log.Error(Message, exc);
+					}
+					if (newConfig != null) _config = newConfig;
+					return _config;
+				}
+			}
+
+			public void UpdateConfig(object config)
+			{
+				_config = config;
+			}
+		}
+
 		private static readonly Logging.LogWrapper log = new Logging.LogWrapper();
 		public const int ReloadEventDelayMs = 5000;
 		private static readonly Dictionary<string, object> configInstances = new Dictionary<string, object>();
@@ -27,38 +76,14 @@ namespace MySpace.Shared.Configuration
 		private static readonly List<string> pendingConfigReloads = new List<string>();
 		private static readonly object configLoadLock = new object();
 		private static readonly Dictionary<Type, List<EventHandler>> reloadDelegates = new Dictionary<Type, List<EventHandler>>();
-
 		private static readonly MsReaderWriterLock reloadDelegatesLock =
 			new MsReaderWriterLock(System.Threading.LockRecursionPolicy.NoRecursion);
+		private static readonly KeyedLazyInitializer<string, ConfigSection> _configs = new KeyedLazyInitializer<string, ConfigSection>(sectionName => new ConfigSection());
 		private static Timer reloadTimer;
 
 		public object Create(object parent, object configContext, XmlNode section)
 		{
-			object retVal = GetConfigInstance(section);
-
-			try
-			{
-				System.Configuration.Configuration config;
-
-				//if the app is hosted you should be able to load a web.config.
-				if (System.Web.Hosting.HostingEnvironment.IsHosted)
-					config = WebConfigurationManager.OpenWebConfiguration(HttpRuntime.AppDomainAppVirtualPath);
-				else
-					config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None);
-				//TODO: figure out how to get Configuration in a service
-
-				//SectionInformation info = config.GetSection(section.Name).SectionInformation;
-				ConfigurationSection configSection = config.GetSection(section.Name);
-				if (configSection.SectionInformation.RestartOnExternalChanges == false)
-					SetupWatcher(config, configSection, retVal);
-			}
-			//if an exception occurs here we simply have no watcher and the app pool must be reset in order to recognize config changes
-			catch (Exception exc)
-			{
-				string Message = "Exception setting up FileSystemWatcher for Section = " + (section != null ? section.Name : "Unknown Section");
-				if (log.IsErrorEnabled) log.Error(Message, exc);
-			}
-			return retVal;
+			return _configs[section.Name].GetConfig(section);
 		}
 
 		private static object GetConfigInstance(XmlNode section)
@@ -131,9 +156,9 @@ Please look at http://mywiki.corp.myspace.com/index.php/XmlSerializerSectionHand
 			System.Diagnostics.Stopwatch watch = null;
 			try
 			{
-				if(log.IsDebugEnabled)
+				if (log.IsDebugEnabled)
 					watch = System.Diagnostics.Stopwatch.StartNew();
-				
+
 				if (useDataContractSerialization)
 				{
 					if (log.IsDebugEnabled) log.DebugFormat("Creating DataContractSerializer for Type = \"{0}\" inferring namespace from Type", t.AssemblyQualifiedName);
@@ -187,7 +212,7 @@ Please look at http://mywiki.corp.myspace.com/index.php/XmlSerializerSectionHand
 				return null;
 			}
 			return Path.Combine(directoryName, configSource);
-			
+
 		}
 
 		private static void SetupWatcher(System.Configuration.Configuration config, ConfigurationSection configSection, object configInstance)
@@ -262,10 +287,13 @@ Please look at http://mywiki.corp.myspace.com/index.php/XmlSerializerSectionHand
 					return;
 				}
 
+				object newSettings = GetConfigInstance(doc.DocumentElement);
+
+				_configs[doc.DocumentElement.Name].UpdateConfig(newSettings);
+
 				//refresh the section in case anyone else uses it
 				ConfigurationManager.RefreshSection(doc.DocumentElement.Name);
 
-				object newSettings = GetConfigInstance(doc.DocumentElement);
 				string fileName = Path.GetFileName(configFilePath);
 				if (fileName == null)
 				{
@@ -285,17 +313,17 @@ Please look at http://mywiki.corp.myspace.com/index.php/XmlSerializerSectionHand
 				}
 
 				reloadDelegatesLock.Read(() =>
-				                         	{
-				                         		List<EventHandler> delegateMethods;
-				                         		if (reloadDelegates.TryGetValue(newSettingsType, out delegateMethods)
-				                         		    && delegateMethods != null)
-				                         		{
-				                         			foreach (EventHandler delegateMethod in delegateMethods)
-				                         			{
-				                         				delegateMethod(newSettings, EventArgs.Empty);
-				                         			}
-				                         		}
-				                         	});
+											{
+												List<EventHandler> delegateMethods;
+												if (reloadDelegates.TryGetValue(newSettingsType, out delegateMethods)
+													&& delegateMethods != null)
+												{
+													foreach (EventHandler delegateMethod in delegateMethods)
+													{
+														delegateMethod(newSettings, EventArgs.Empty);
+													}
+												}
+											});
 			}
 			catch (Exception e)
 			{
@@ -314,7 +342,7 @@ Please look at http://mywiki.corp.myspace.com/index.php/XmlSerializerSectionHand
 			reloadDelegatesLock.Write(() =>
 			{
 				List<EventHandler> eventHandlerList;
-				if (reloadDelegates.TryGetValue(type, out eventHandlerList) && 
+				if (reloadDelegates.TryGetValue(type, out eventHandlerList) &&
 					eventHandlerList != null)
 				{
 					if (!eventHandlerList.Contains(delegateMethod))
@@ -340,7 +368,7 @@ Please look at http://mywiki.corp.myspace.com/index.php/XmlSerializerSectionHand
 			reloadDelegatesLock.Write(() =>
 			{
 				List<EventHandler> eventHandlerList;
-				if (reloadDelegates.TryGetValue(type, out eventHandlerList) && 
+				if (reloadDelegates.TryGetValue(type, out eventHandlerList) &&
 					eventHandlerList != null)
 				{
 					eventHandlerList.Remove(delegateMethod);

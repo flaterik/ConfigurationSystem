@@ -149,17 +149,65 @@ namespace MySpace.ConfigurationSystem
 			}
 		}
 
+		/// <summary>
+		/// Gets an XmlReader representing the <paramref name="sectionName"/> from the configuration server.
+		/// </summary>
+		public static XmlReader GetSectionXmlReader(string sectionName)
+		{
+			ConfigurationItem item = GetSectionItem(sectionName);
+			if (item == null)
+				return null;
+
+			XmlReader reader;
+
+			try
+			{
+				reader = CreateXmlReader(item.SectionStringBytes);
+				return reader;
+			}
+			catch (Exception e)
+			{
+				log.ErrorFormat(
+					"Got exception {0} creating xml reader for section {1}. Xml data was {2}. Invalidating config and attempting retry.",
+					e, sectionName, item.SectionString);
+
+				try
+				{
+					InvalidateSection(sectionName);
+					item = GetSectionItem(sectionName);
+					reader = CreateXmlReader(item.SectionStringBytes);
+					return reader;
+				}
+				catch (Exception e2)
+				{
+					log.ErrorFormat(
+						"Got exception {0} on second attempt to create xml reader for section {1}. Xml data was {2}. Throwing exception.",
+						e2, sectionName, item.SectionString);
+					throw new ConfigurationSystemException(sectionName,
+														   string.Format(
+															"Section failed xml reader creation with exception {0}, even after local invalidation and server refetch",
+															e2.Message), e2);
+				}
+
+			}
+		}
+
 		internal static XmlDocument CreateXmlDocument(byte[] sectionStringBytes)
 		{
-			
 			//TODO: synchronize access to bytes?
 			//TODO: use xmlreader instead and return that for xmlnode method?
 			//loading from a stream with .load is much less prone to error than reading from a string with .loadxml
 			//(it has to do with text encoding and bad assumptions made by xmldocument.loadxml)
-			MemoryStream stream = new MemoryStream(sectionStringBytes);
+			//this has also proven to produce different results than xmlreader, especially when deserializing. removing usage
+			//of XmlDocument would probably be a good idea
 			XmlDocument doc = new XmlDocument();
-			doc.Load(stream);
+			doc.Load(new MemoryStream(sectionStringBytes));
 			return doc;
+		}
+
+		internal static XmlReader CreateXmlReader(byte[] sectionStringBytes)
+		{
+			return XmlReader.Create(new MemoryStream(sectionStringBytes));
 		}
 
 		/// <summary>
@@ -647,16 +695,16 @@ namespace MySpace.ConfigurationSystem
         /// <returns></returns>
         public static T GetSectionFromConfigServer<T>(string sectionName)
         {
-            var configString = ConfigurationClient.GetSectionString(sectionName);
+            var configString = GetSectionString(sectionName);
 
             using (StringReader reader = new StringReader(configString))
             {
                 XmlTextReader xmlReader = new XmlTextReader(reader);
 
                 XmlSerializer serializer = new XmlSerializer(typeof(T));
-                T config = (T)serializer.Deserialize(xmlReader);
+                T deserializedConfig = (T)serializer.Deserialize(xmlReader);
 
-                return config;
+				return deserializedConfig;
             }
         }
 	}
